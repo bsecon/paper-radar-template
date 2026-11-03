@@ -7,7 +7,7 @@ for how the radar works.
 
 ## Setup checklist
 
-1. **Prerequisites.** Check which of these exist: `uv` (`uv --version`), the GitHub CLI
+1. **Prerequisites.** macOS or Linux (Windows: use WSL). Check which of these exist: `uv` (`uv --version`), the GitHub CLI
    (`gh --version`), and Claude Code (`claude --version`, or inside the Claude desktop app).
    Install what is missing: `curl -LsSf https://astral.sh/uv/install.sh | sh`;
    `gh` from https://cli.github.com; Claude Code with `curl -fsSL https://claude.ai/install.sh | bash`.
@@ -15,7 +15,8 @@ for how the radar works.
 2. **GitHub login.** `gh auth login`, then `gh auth setup-git`. The repo this folder was cloned
    from is where digests and alerts will be posted as issues. Confirm with `gh repo view`.
 3. **Claude login for the headless runs.** `bin/claude-login.sh` opens a browser, stores a
-   long-lived token in the macOS keychain, and runs one test call.
+   long-lived token (macOS keychain, or `~/.config/paper-radar/token` on Linux), and runs one
+   test call.
 4. **Dependencies and check.** `uv sync`, then `uv run radar doctor`: it must show the Claude
    binary, `gh`, and the GitHub repo.
 5. **Profile.** This is the step that matters. Ask for the person's CV, website, or two or three
@@ -28,8 +29,8 @@ for how the radar works.
 7. **First run.** `uv run radar run`. The first run fetches the last seven days, screens a few
    hundred abstracts (10-20 minutes), reads the top papers, and posts the first digest as a
    GitHub issue. Open it together and discuss whether the scores look right; adjust the profile.
-8. **Schedule.** `bin/install-launchd.sh 7 30` installs a daily job at 07:30 plus a 13:00 retry.
-   Linux: put `bin/daily.sh` in a cron entry instead. The machine has to be awake at that time.
+8. **Schedule.** macOS: `bin/install-launchd.sh 7 30`; Linux: `bin/install-cron.sh 7 30`. Both
+   install a daily job at 07:30 plus a 13:00 retry. The machine has to be awake at that time.
 9. **Explain the daily loop.** Digest arrives by GitHub email. Reply to the email (or comment on
    the issue) with lines like `good: R12 R15`, `bad: R3 too theoretical`,
    `missed: https://...`. Send a paper in by opening an issue with its link. Once in a while

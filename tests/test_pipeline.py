@@ -78,3 +78,12 @@ Am Fr., 30. Okt. 2026 um 13:02 Uhr schrieb github-actions[bot] <
     assert fb[1][1] == ["https://www.rwi-essen.de/fileadmin/user_upload/RWI/Publikationen/Ruhr_Economic_Papers/REP_26_1228.pdf"]
     assert fb[1][2] == "have you seen this paper"
     assert len(fb) == 2  # the quoted R999 is ignored
+
+
+def test_stored_token_falls_back_to_file(tmp_path, monkeypatch):
+    from radar import llm
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
+    monkeypatch.setattr(llm, "IS_MAC", False)
+    assert llm.stored_token() is None
+    f = llm.token_file(); f.parent.mkdir(parents=True); f.write_text("sk-ant-oat-test\n")
+    assert llm.stored_token() == "sk-ant-oat-test"

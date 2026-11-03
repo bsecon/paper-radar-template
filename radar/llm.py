@@ -11,6 +11,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +20,7 @@ from pydantic import BaseModel
 from radar.config import Config
 
 APP_DIR = os.path.expanduser("~/Library/Application Support/Claude/claude-code")
+IS_MAC = sys.platform == "darwin"
 TRANSIENT_RETRIES = 2
 
 
@@ -104,10 +106,10 @@ def _generate_claude_code_once(cfg: Config, model: str, system: str, user: str, 
     env.setdefault("DISABLE_AUTOUPDATER", "1")                      # never update mid-run
     env.setdefault("CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC", "1")  # no telemetry, update checks, etc.
     env.setdefault("DISABLE_TELEMETRY", "1")
-    token = _keychain_token()
+    token = stored_token()
     if token and "CLAUDE_CODE_OAUTH_TOKEN" not in env:
         env["CLAUDE_CODE_OAUTH_TOKEN"] = token
-    debug = os.environ.get("RADAR_CLAUDE_DEBUG") or os.path.expanduser("~/Library/Logs/paper-radar-claude.log")
+    debug = os.environ.get("RADAR_CLAUDE_DEBUG") or str(log_dir() / "claude.log")
     cmd += ["--debug-file", debug]
     try:
         out = subprocess.run(cmd, input=user, capture_output=True, text=True, timeout=cfg.settings.llm_timeout, env=env,
@@ -133,14 +135,38 @@ def _generate_claude_code_once(cfg: Config, model: str, system: str, user: str, 
 KEYCHAIN_SERVICE = "paper-radar-claude-token"
 
 
-def _keychain_token() -> str | None:
-    """A long-lived token from `claude setup-token`, stored with bin/claude-login.sh."""
+def token_file() -> Path:
+    """Where bin/claude-login.sh stores the token on Linux (macOS uses the keychain)."""
+    base = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
+    return Path(base) / "paper-radar" / "token"
+
+
+def log_dir() -> Path:
+    """~/Library/Logs on macOS, ~/.local/state/paper-radar elsewhere."""
+    if IS_MAC:
+        d = Path(os.path.expanduser("~/Library/Logs"))
+    else:
+        base = os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state")
+        d = Path(base) / "paper-radar"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def stored_token() -> str | None:
+    """A long-lived token from `claude setup-token`, stored with bin/claude-login.sh:
+    macOS keychain first, then the token file. None means Claude Code's own login is used."""
+    if IS_MAC:
+        try:
+            out = subprocess.run(["security", "find-generic-password", "-s", KEYCHAIN_SERVICE, "-w"],
+                                 capture_output=True, text=True, timeout=10)
+            if out.stdout.strip():
+                return out.stdout.strip()
+        except Exception:
+            pass
     try:
-        out = subprocess.run(["security", "find-generic-password", "-s", KEYCHAIN_SERVICE, "-w"],
-                             capture_output=True, text=True, timeout=10)
-    except Exception:
+        return token_file().read_text(encoding="utf-8").strip() or None
+    except OSError:
         return None
-    return out.stdout.strip() or None
 
 
 def _generate_api(model: str, system: str, user: str, schema: dict[str, Any], effort: str | None, max_tokens: int) -> dict[str, Any]:

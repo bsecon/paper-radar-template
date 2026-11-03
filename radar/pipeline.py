@@ -80,14 +80,16 @@ def alert(cfg: Config, db: DB, gh, screen_result: dict[str, Any]) -> None:
         reason = screen_result["errors"][0]
         from radar import llm
         if llm.is_auth_error(reason):
-            hint = ("The Claude Code login used by the radar has expired. On the Mac run `bin/claude-login.sh` "
-                    "(opens a browser), then `launchctl kickstart gui/$(id -u)/com.paper-radar`.")
+            hint = ("The Claude Code login used by the radar has expired. On the machine that runs it, run "
+                    "`bin/claude-login.sh` (opens a browser), then rerun the job: `launchctl kickstart gui/$(id -u)/com.paper-radar` "
+                    "on macOS, or `bin/daily.sh` by hand.")
         elif llm.is_setup_error(reason):
-            hint = ("The Claude Code executable could not be found. On the Mac run `curl -fsSL https://claude.ai/install.sh | bash` "
-                    "(or set RADAR_CLAUDE_BIN), check with `uv run radar doctor`, then kickstart the job.")
+            hint = ("The Claude Code executable could not be found. Run `curl -fsSL https://claude.ai/install.sh | bash` "
+                    "(or set RADAR_CLAUDE_BIN), check with `uv run radar doctor`, then rerun the job.")
         else:
             hint = ("Probably transient (network, rate limit). The job retries automatically at 13:00; "
-                    "if this issue is still open tomorrow, check `~/Library/Logs/paper-radar.log` on the Mac.")
+                    "if this issue is still open tomorrow, check the log: `~/Library/Logs/paper-radar.log` on macOS, "
+                    "`~/.local/state/paper-radar/daily.log` on Linux.")
         body = f"Every screening call failed today, so no digest was produced.\n\n```\n{reason[:600]}\n```\n\n{hint}"
         if gh is not None:
             gh.ensure_label("alert", "d93f0b", "radar needs attention")

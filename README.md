@@ -1,15 +1,16 @@
 # paper-radar
 
 A daily radar for new economics papers, screened by Claude against your own research profile
-and delivered as a GitHub issue every morning. It runs on your Mac under your Claude
-subscription; no API key and no server.
+and delivered as a GitHub issue every morning. It runs on your own computer, macOS or Linux
+(Windows through WSL), under your Claude subscription; no API key and no server.
 
 ## Start your own in twenty minutes
 
 1. Click **Use this template** at the top of this page and create a **private** repository
    under your account (your profile, digests, and ratings will live there).
-2. Install the [Claude desktop app](https://claude.ai/download) (Pro or Max subscription),
-   the [GitHub CLI](https://cli.github.com), and [uv](https://docs.astral.sh/uv/).
+2. Install [Claude Code](https://docs.anthropic.com/en/docs/claude-code/setup) (needs a Pro or
+   Max subscription; on a Mac the Claude desktop app includes it), the
+   [GitHub CLI](https://cli.github.com), and [uv](https://docs.astral.sh/uv/).
    Clone your new repository.
 3. Open Claude Code in the cloned folder and say **"set up my radar"**. `CLAUDE.md` holds the
    checklist; it will log you in, write `profile.md` from your CV and papers, run the first
@@ -24,7 +25,7 @@ bin/claude-login.sh                 # headless Claude login, token goes to the k
 # edit profile.md and config/sources.yml
 uv run radar doctor
 uv run radar run                    # first digest
-bin/install-launchd.sh 7 30         # daily at 07:30
+bin/install-launchd.sh 7 30         # daily at 07:30 (macOS); bin/install-cron.sh 7 30 on Linux
 ```
 
 ## What the daily run does
@@ -57,14 +58,20 @@ notification. Fix it with:
 bin/claude-login.sh
 ```
 
-That runs `claude setup-token` (browser login, long-lived token) and stores the token in your
-keychain under `paper-radar-claude-token`, where the radar reads it. The next run closes the alert.
+That runs `claude setup-token` (browser login, long-lived token) and stores the token where the
+radar reads it: the macOS keychain (`paper-radar-claude-token`) or `~/.config/paper-radar/token`
+on Linux. The next run closes the alert.
 
 ## Scheduling
 
-The job runs when the Mac is awake at that time; launchd runs it on wake if the Mac was asleep, and
-the seven-day lookback covers days it was off. Run it by hand with `uv run radar run`, or trigger the
-launchd job with `launchctl kickstart gui/$(id -u)/com.paper-radar`.
+macOS: `bin/install-launchd.sh 7 30` (launchd, log in `~/Library/Logs/paper-radar.log`).
+Linux: `bin/install-cron.sh 7 30` (crontab, log in `~/.local/state/paper-radar/daily.log`).
+Windows: use WSL and the Linux instructions. Both installers add a 13:00 retry slot that only
+runs when the morning run left work pending.
+
+The job runs when the machine is awake at that time; launchd runs it on wake if the Mac was asleep,
+and the seven-day lookback covers days it was off. Run it by hand with `uv run radar run`, or trigger the
+launchd job with `launchctl kickstart gui/$(id -u)/com.paper-radar` on macOS.
 
 ## Sending a paper in
 
