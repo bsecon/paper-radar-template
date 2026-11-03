@@ -143,6 +143,10 @@ git remote add template https://github.com/bsecon/paper-radar-template
 git pull template main
 ```
 
+## License
+
+MIT. Use it, change it, share it; keep the notice.
+
 ## Credits
 
 Built by Bastian Schulz (Aarhus University) with Claude Code. Issues and pull requests to the
