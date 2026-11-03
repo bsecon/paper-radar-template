@@ -1,0 +1,31 @@
+# The pipeline itself runs on your Mac (launchd). These jobs only post comments from the
+# github-actions bot, which is what makes GitHub notify you (it never notifies you of your own actions).
+name: notify
+on:
+  issues:
+    types: [opened]
+permissions:
+  issues: write
+jobs:
+  digest-ready:
+    if: contains(github.event.issue.labels.*.name, 'digest') || contains(github.event.issue.labels.*.name, 'alert')
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          gh issue comment "$NUMBER" --repo "$REPO" --body "$(printf 'Digest ready: %s\n\n%s' "$URL" "$SUMMARY")"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+          URL: ${{ github.event.issue.html_url }}
+          SUMMARY: ${{ github.event.issue.body }}
+  paper-received:
+    if: "!contains(github.event.issue.labels.*.name, 'digest') && !contains(github.event.issue.labels.*.name, 'alert')"
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          gh issue comment "$NUMBER" --repo "$REPO" --body "Got it. The radar picks this up on its next run (mornings) and will reply here with what it resolved; the full read lands in that day's digest."
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}

@@ -1,0 +1,28 @@
+#!/bin/zsh
+# Re-authenticate the headless Claude Code used by the radar.
+# Creates a long-lived token (about a year) with `claude setup-token` and stores it in your macOS
+# keychain under "paper-radar-claude-token". The radar reads it from there; nothing is written to disk.
+set -uo pipefail
+SERVICE="paper-radar-claude-token"
+CL="${RADAR_CLAUDE_BIN:-}"
+if [ -z "$CL" ]; then
+  CL="$(command -v claude || ls -d "$HOME/Library/Application Support/Claude/claude-code/"*/claude.app/Contents/MacOS/claude 2>/dev/null | sort -V | tail -1)"
+fi
+[ -x "$CL" ] || { echo "Claude Code binary not found"; exit 1; }
+echo "Using $CL"
+echo "A browser window will open; approve the login. The token is captured and stored, not shown."
+OUT="$(env -u CLAUDECODE "$CL" setup-token 2>&1 | tee /dev/stderr)"
+TOKEN="$(echo "$OUT" | grep -o 'sk-ant-oat[A-Za-z0-9_-]*' | tail -1)"
+if [ -z "$TOKEN" ]; then
+  echo
+  echo "Could not capture the token automatically. Paste it here (input hidden):"
+  read -rs TOKEN
+fi
+[ -n "$TOKEN" ] || { echo "no token"; exit 1; }
+security delete-generic-password -s "$SERVICE" >/dev/null 2>&1 || true
+security add-generic-password -s "$SERVICE" -a "$USER" -w "$TOKEN" -U
+echo "Stored in keychain as $SERVICE. Testing..."
+cd "$(dirname "$0")/.." && uv run python -c "
+from radar.config import load_config; from radar import llm
+cfg = load_config()
+print(llm.generate(cfg, model='claude-sonnet-5', system='Reply with JSON.', user='Return {\"ok\": true}', schema={'type':'object','properties':{'ok':{'type':'boolean'}},'required':['ok'],'additionalProperties':False}, effort='low'))"

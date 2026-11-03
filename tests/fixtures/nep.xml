@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rss="http://purl.org/rss/1.0/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<rss:channel rdf:about="http://lists.repec.org/mailman/listinfo/nep-mic"><rss:title>Microeconomics</rss:title><rss:link>x</rss:link><rss:description>Microeconomics</rss:description><dc:date>2026-09-07</dc:date>
+<rss:items><rdf:Seq><rdf:li rdf:resource="https://d.repec.org/n?u=RePEc:cpr:ceprdp:19247&amp;r=&amp;r=mic"/><rdf:li rdf:resource="https://d.repec.org/n?u=RePEc:arx:papers:2608.17446&amp;r=&amp;r=mic"/></rdf:Seq></rss:items>
+</rss:channel>
+<rss:item rdf:about="https://d.repec.org/n?u=RePEc:cpr:ceprdp:19247&amp;r=&amp;r=mic">
+<rss:title>Persuasion of Loss-Averse Receivers Through Early Offers</rss:title>
+<rss:link>https://d.repec.org/n?u=RePEc:cpr:ceprdp:19247&amp;r=&amp;r=mic</rss:link>
+<rss:description>We study a simple bargaining model.</rss:description>
+<dc:creator>Karle, Heiko</dc:creator>
+<dc:creator>Schumacher, Heiner</dc:creator>
+<dc:creator>Volund, Rune</dc:creator>
+</rss:item>
+<rss:item rdf:about="https://d.repec.org/n?u=RePEc:arx:papers:2608.17446&amp;r=&amp;r=mic">
+<rss:title>Some arXiv paper</rss:title>
+<rss:link>https://d.repec.org/n?u=RePEc:arx:papers:2608.17446&amp;r=&amp;r=mic</rss:link>
+<rss:description>Abstract.</rss:description>
+<dc:creator>Doe, Jane</dc:creator>
+</rss:item>
+</rdf:RDF>

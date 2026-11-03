@@ -1,0 +1,141 @@
+# Sources polled by `radar fetch`. Edit freely; ids must stay unique.
+contact_email: you@example.org   # change me: sent as User-Agent / mailto to polite API pools
+
+settings:
+  lookback_days: 7          # how far back a first run (or a run after a gap) looks
+  show_threshold: 6         # score needed to appear in the digest
+  deep_read_threshold: 8    # score needed for a full-paper read
+  max_deep_reads: 5         # per day, on top of papers you sent in yourself
+  backend: claude_code      # claude_code = Claude Code headless under your subscription; api = ANTHROPIC_API_KEY
+  # claude_bin: /path/to/claude   # auto-detected: PATH, then the Claude desktop app bundle
+  llm_timeout: 300          # seconds per call (a screening call takes about 15 s)
+  screen_model: claude-sonnet-5
+  screen_effort: low
+  screen_group_size: 12     # papers per screening call
+  deep_read_model: claude-opus-5
+  review_model: claude-opus-5
+  digest_label: digest      # GitHub label put on digest issues
+  paper_label: paper        # GitHub label put on processed intake issues
+  timezone: Europe/Copenhagen
+
+working_papers:
+  - id: nber
+    type: rss
+    parser: nber
+    url: https://back.nber.org/rss/new.xml
+    venue: NBER
+  - id: cepr
+    type: rss
+    parser: cepr
+    url: https://cepr.org/rss/discussion-paper
+    venue: CEPR
+  - id: iza
+    type: ideas_series
+    url: https://ideas.repec.org/s/iza/izadps.html
+    venue: IZA
+  - id: arxiv
+    type: arxiv
+    categories: [econ.GN, econ.EM, econ.TH]
+    venue: arXiv
+  - id: nep-dem
+    type: rss
+    parser: nep
+    url: http://nep.repec.org/rss/nep-dem.rss.xml
+    venue: NEP Demographic Economics
+  - id: nep-lab
+    type: rss
+    parser: nep
+    url: http://nep.repec.org/rss/nep-lab.rss.xml
+    venue: NEP Labour Economics
+  - id: nep-mic
+    type: rss
+    parser: nep
+    url: http://nep.repec.org/rss/nep-mic.rss.xml
+    venue: NEP Microeconomics
+  - id: nep-lma
+    type: rss
+    parser: nep
+    url: http://nep.repec.org/rss/nep-lma.rss.xml
+    venue: NEP Labor Markets
+  - id: nep-pbe
+    type: rss
+    parser: nep
+    url: http://nep.repec.org/rss/nep-pbe.rss.xml
+    venue: NEP Public Economics
+  - id: nep-dge
+    type: rss
+    parser: nep
+    url: http://nep.repec.org/rss/nep-dge.rss.xml
+    venue: NEP Dynamic General Equilibrium
+  - id: nep-gen
+    type: rss
+    parser: nep
+    url: http://nep.repec.org/rss/nep-gen.rss.xml
+    venue: NEP Gender
+  - id: nep-ecm
+    type: rss
+    parser: nep
+    url: http://nep.repec.org/rss/nep-ecm.rss.xml
+    venue: NEP Econometrics
+  - id: nep-ltv
+    type: rss
+    parser: nep
+    url: http://nep.repec.org/rss/nep-ltv.rss.xml
+    venue: NEP Unemployment, Inequality and Poverty
+  # Keyword catch-all over everything OpenAlex indexes (RePEc series, SSRN, university
+  # repositories, journals). Noisy by design; the screener sorts it out. Phrases are quoted.
+  - id: openalex-keywords
+    type: openalex_search
+    venue: OpenAlex
+    window_days: 30
+    phrases:
+      # examples; replace with ten to twenty phrases from your own field
+      - minimum wage
+      - monopsony
+      - child penalty
+      - intergenerational mobility
+      - matched employer-employee
+
+journals:
+  - name: American Economic Review
+    issn: "0002-8282"
+  - name: "American Economic Review: Insights"
+    issn: "2640-205X"
+  - name: Journal of Political Economy
+    issn: "0022-3808"
+  - name: Quarterly Journal of Economics
+    issn: "0033-5533"
+  - name: Econometrica
+    issn: "0012-9682"
+  - name: Review of Economic Studies
+    issn: "0034-6527"
+  - name: Review of Economics and Statistics
+    issn: "0034-6535"
+  - name: Journal of the European Economic Association
+    issn: "1542-4766"
+  - name: "AEJ: Applied Economics"
+    issn: "1945-7782"
+  - name: "AEJ: Macroeconomics"
+    issn: "1945-7707"
+  - name: "AEJ: Microeconomics"
+    issn: "1945-7669"
+  - name: Journal of Labor Economics
+    issn: "0734-306X"
+  - name: Journal of Human Resources
+    issn: "0022-166X"
+  - name: Journal of Public Economics
+    issn: "0047-2727"
+  - name: Labour Economics
+    issn: "0927-5371"
+  - name: Demography
+    issn: "0070-3370"
+  - name: Journal of Population Economics
+    issn: "0933-1433"
+  - name: Quantitative Economics
+    issn: "1759-7323"
+  - name: Review of Economic Dynamics
+    issn: "1094-2025"
+  - name: International Economic Review
+    issn: "0020-6598"
+  - name: Journal of Marriage and Family
+    issn: "0022-2445"

@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# PDFs are synced locally with `radar library sync`, not committed
+library/pdfs/*
+!library/pdfs/.gitkeep
+# local secrets
+.env
