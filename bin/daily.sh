@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Daily run, invoked by launchd (macOS) or cron (Linux). Pulls, runs the pipeline, commits state, pushes.
 set -uo pipefail
-export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 cd "$(dirname "$0")/.." || exit 1
 echo "=== $(date '+%F %T') start"
 git pull --rebase --autostash -q origin main || echo "pull failed, continuing offline"

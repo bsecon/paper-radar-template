@@ -9,6 +9,7 @@ dependencies = [
     "pydantic>=2.7",
     "pypdf>=5.0",
     "pyyaml>=6.0",
+    "tzdata>=2026.6",
 ]
 
 [project.optional-dependencies]
