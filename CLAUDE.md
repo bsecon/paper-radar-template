@@ -22,8 +22,9 @@ for how the radar works.
    test call.
 4. **Dependencies and check.** `uv sync`, then `uv run radar doctor`: it must show the Claude
    binary, `gh`, and the GitHub repo.
+   uv uses an installed Python 3.11 or newer and downloads one only if none exists.
    Windows, inside the Claude desktop app: the app redirects writes to `AppData\Roaming`, which
-   breaks uv's Python download ("Missing expected target directory for Python minor version
+   breaks that download ("Missing expected target directory for Python minor version
    link"). Run `export UV_PYTHON_INSTALL_DIR="$HOME/.local/share/uv/python"` first, and add the
    same line to `~/.bashrc` so later runs agree. If `claude` is installed but not on PATH
    (`~/.local/bin/claude.exe`), the radar finds it there anyway; `radar doctor` confirms.

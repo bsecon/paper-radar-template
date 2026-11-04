@@ -15,7 +15,8 @@ under your Claude subscription; no API key and no server.
      `irm https://claude.ai/install.ps1 | iex` for Claude Code. Open a new **Git Bash** window
      for everything that follows; the scripts are written for it. If you work inside the Claude
      desktop app's terminal, run `export UV_PYTHON_INSTALL_DIR="$HOME/.local/share/uv/python"`
-     before `uv sync`; the app redirects AppData writes and uv's Python install fails otherwise.
+     before `uv sync`; the app redirects AppData writes and uv's Python download fails otherwise.
+     uv downloads a Python only if none of version 3.11 or newer is installed already.
 
    Clone your new repository.
 3. Open Claude Code in the cloned folder and say **"set up my radar"**. `CLAUDE.md` holds the
@@ -149,6 +150,20 @@ the current profile would show and how many unwanted ones it would hide.
 Roughly 200-400 abstracts a day in groups of a dozen through Sonnet 5 at low effort, plus up to
 five full reads on Opus 5. Under the subscription this counts against your plan's usage; on the
 API it is on the order of one dollar a day.
+
+## Without uv
+
+uv only manages a virtual environment and the dependency lock. If you already have Python 3.11
+or newer and prefer pip:
+
+```bash
+python -m venv .venv && source .venv/bin/activate   # Git Bash: source .venv/Scripts/activate
+pip install -e .
+radar doctor
+```
+
+Then replace `uv run radar` with `radar` in `bin/daily.sh` and `bin/claude-login.sh`, with the
+virtual environment activated in the scheduled job's shell.
 
 ## Updating the code
 
