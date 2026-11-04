@@ -1,6 +1,8 @@
 """Screening: score every new paper against profile.md, in groups of a few papers per call."""
 from __future__ import annotations
 
+import re
+import unicodedata
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -9,7 +11,7 @@ from radar import llm
 from radar.config import Config
 from radar.db import DB, row_authors, row_json
 from radar.models import ScreenResult
-from radar.text import short_authors, truncate
+from radar.text import last_name, short_authors, truncate
 
 INSTRUCTIONS = """You screen new economics papers for one researcher. You get the researcher's profile,
 examples of past ratings, and then a numbered list of papers (title, authors, venue, abstract, JEL codes).
@@ -25,6 +27,42 @@ Category: core / adjacent / methods (mainly useful for its econometrics or model
 Be calibrated: most papers in a broad feed are 0-4. Do not inflate scores for famous venues.
 Author matches count: if an author is on the always-show list, score at least 7.
 Return one result per paper, with the paper's ref exactly as given. Return only the JSON."""
+
+
+ALWAYS_SHOW_MIN = 7
+
+
+def always_show_names(profile: str) -> list[str]:
+    """Names listed under the profile's '## Always show' heading (comma/newline separated)."""
+    m = re.search(r"^##\s*Always show\s*$(.*?)(?=^##\s|\Z)", profile, re.M | re.S)
+    if not m:
+        return []
+    body = re.sub(r"<!--.*?-->", "", m.group(1), flags=re.S)
+    body = re.sub(r"(?i)papers by or with\s*:", "", body)
+    names = [n.strip(" .\n-*") for n in re.split(r",|\n|\band\b", body)]
+    return [n for n in names if len(n.split()) >= 2]
+
+
+def _key(name: str) -> tuple[str, str]:
+    """(last name, first initial), ascii lower-case; handles 'First Last' and 'Last, First'."""
+    a = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode().strip()
+    if "," in a:
+        last, first = (p.strip() for p in a.split(",", 1))
+    else:
+        parts = a.split()
+        last, first = (parts[-1], parts[0]) if len(parts) > 1 else (a, "")
+    return last.lower(), (first[:1].lower() if first else "")
+
+
+def always_show_match(names: list[str], authors: list[str]) -> str | None:
+    """The first author that matches an always-show name (same last name, same first initial if both known)."""
+    keys = [_key(n) for n in names]
+    for author in authors:
+        last, ini = _key(author)
+        for klast, kini in keys:
+            if last == klast and (not ini or not kini or ini == kini):
+                return author
+    return None
 
 
 class ScoredPaper(ScreenResult):
@@ -64,7 +102,7 @@ def paper_block(row: Any) -> str:
     )
 
 
-def screen_group(cfg: Config, db: DB, system: str, rows: list[Any]) -> int:
+def screen_group(cfg: Config, db: DB, system: str, rows: list[Any], always: list[str] | None = None) -> int:
     user = "Score these papers.\n\n" + "\n".join(paper_block(r) for r in rows)
     data = llm.generate(cfg, model=cfg.settings.screen_model, system=system, user=user,
                         schema=llm.schema_for(ScreenBatch), effort=cfg.settings.screen_effort)
@@ -75,7 +113,11 @@ def screen_group(cfg: Config, db: DB, system: str, rows: list[Any]) -> int:
         res = by_ref.get(f"R{row['seq']}")
         if res is None:
             continue
-        db.set_screen(int(row["seq"]), res.score, res.category, res.reason, res.topics)
+        score, reason = res.score, res.reason
+        hit = always_show_match(always or [], row_authors(row))
+        if hit and score < ALWAYS_SHOW_MIN:  # the model treats the list as a hint; the profile means it as a rule
+            score, reason = ALWAYS_SHOW_MIN, f"Always-show author {hit}. {reason}"
+        db.set_screen(int(row["seq"]), score, res.category, reason, res.topics)
         n += 1
     return n
 
@@ -92,6 +134,7 @@ def screen(cfg: Config, db: DB, limit: int | None = None) -> dict[str, Any]:
         except Exception as e:
             return {"scored": 0, "calls": 0, "unscreened_left": len(rows), "errors": [str(e)[:200]]}
     system = system_prompt(cfg, db)
+    always = always_show_names(cfg.profile_text())
     size = max(1, cfg.settings.screen_group_size)
     scored = calls = 0
     errors: list[str] = []
@@ -99,13 +142,15 @@ def screen(cfg: Config, db: DB, limit: int | None = None) -> dict[str, Any]:
         group = rows[i : i + size]
         calls += 1
         try:
-            scored += screen_group(cfg, db, system, group)
+            scored += screen_group(cfg, db, system, group, always)
         except Exception as e:
             errors.append(str(e)[:200])
             if llm.is_auth_error(str(e)) or llm.is_setup_error(str(e)):
                 break  # every further call would fail the same way
     out: dict[str, Any] = {"scored": scored, "calls": calls, "unscreened_left": len(db.unscreened())}
     if errors:
+        out["failed_calls"] = len(errors)
+        out["warning"] = f"{len(errors)} of {calls} screening calls failed; {out['unscreened_left']} papers left unscreened"
         out["errors"] = errors[:5]
     return out
 

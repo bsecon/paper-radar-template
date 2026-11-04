@@ -34,7 +34,10 @@ sources are noisy by design. -->
 
 ## Always show
 
-<!-- Papers by or with: names of coauthors, people whose work you follow. -->
+<!-- Comma-separated full names: coauthors, people whose work you follow. This section is
+enforced by the code, not just read by the model: any paper with one of these authors scores
+at least 7 and appears in the digest. Keep the list short.
+Papers by or with: Jane Doe, John Smith -->
 
 ## My own papers (for context on what "related to my work" means)
 

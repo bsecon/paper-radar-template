@@ -16,6 +16,11 @@ def _print(obj) -> None:
 
 
 def main(argv: list[str] | None = None) -> None:
+    for stream in (sys.stdout, sys.stderr):  # Windows consoles default to cp1252; titles are not
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
     ap = argparse.ArgumentParser(prog="radar", description="Daily radar for new economics papers.")
     sub = ap.add_subparsers(dest="cmd", required=True)
 

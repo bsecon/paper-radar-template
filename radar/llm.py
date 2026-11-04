@@ -112,7 +112,8 @@ def _generate_claude_code_once(cfg: Config, model: str, system: str, user: str, 
     debug = os.environ.get("RADAR_CLAUDE_DEBUG") or str(log_dir() / "claude.log")
     cmd += ["--debug-file", debug]
     try:
-        out = subprocess.run(cmd, input=user, capture_output=True, text=True, timeout=cfg.settings.llm_timeout, env=env,
+        out = subprocess.run(cmd, input=user, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                             timeout=cfg.settings.llm_timeout, env=env,
                              cwd=str(cfg.root))
     except subprocess.TimeoutExpired as e:
         raise LLMError(f"claude timed out after {cfg.settings.llm_timeout}s") from e

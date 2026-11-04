@@ -73,7 +73,7 @@ class GitHub:
 
 def _gh_token() -> str | None:
     try:
-        out = subprocess.run(["gh", "auth", "token"], capture_output=True, text=True, timeout=10)
+        out = subprocess.run(["gh", "auth", "token"], capture_output=True, text=True, encoding="utf-8", timeout=10)
         return out.stdout.strip() or None
     except Exception:
         return None
@@ -81,7 +81,7 @@ def _gh_token() -> str | None:
 
 def _repo_from_git() -> str | None:
     try:
-        url = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True, timeout=5).stdout.strip()
+        url = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True, encoding="utf-8", timeout=5).stdout.strip()
     except Exception:
         return None
     if not url:

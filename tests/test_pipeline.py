@@ -87,3 +87,14 @@ def test_stored_token_falls_back_to_file(tmp_path, monkeypatch):
     assert llm.stored_token() is None
     f = llm.token_file(); f.parent.mkdir(parents=True); f.write_text("sk-ant-oat-test\n")
     assert llm.stored_token() == "sk-ant-oat-test"
+
+
+def test_always_show_is_parsed_and_matched():
+    from radar.screen import always_show_match, always_show_names
+    profile = "## Core\n- x\n\n## Always show\n\nPapers by or with: Pierre-André Chiappori, Rune Vejlin,\nLones Smith and Robert Shimer.\n\n## My own papers\n- y\n"
+    names = always_show_names(profile)
+    assert names == ["Pierre-André Chiappori", "Rune Vejlin", "Lones Smith", "Robert Shimer"]
+    assert always_show_match(names, ["Jesper Bagger", "Vejlin, Rune"]) == "Vejlin, Rune"
+    assert always_show_match(names, ["P. A. Chiappori"]) == "P. A. Chiappori"
+    assert always_show_match(names, ["Adam Smith"]) is None
+    assert always_show_names("## Always show\n\n<!-- Papers by or with: Jane Doe -->\n") == []
