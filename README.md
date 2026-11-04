@@ -1,40 +1,99 @@
 # paper-radar
 
-A daily radar for new economics papers, screened by Claude against your own research profile
-and delivered as a GitHub issue every morning. It runs on your own computer, Mac or Windows,
-under your Claude subscription; no API key and no server.
+Every morning, this tool fetches the new economics working papers and journal articles, asks
+Claude to score each one against a one-page description of your research, and posts a short
+digest of the few that matter to you. It runs on your own computer, Mac or Windows, under your
+Claude subscription. No API key, no server, no access to your email.
 
-## Start your own in twenty minutes
+Setting it up takes about twenty minutes. Most of that is describing your research.
 
-1. Click **Use this template** at the top of this page and create a **private** repository
-   under your account (your profile, digests, and ratings will live there).
-2. Install the tools (a Claude Pro or Max subscription is needed):
+## What you need
+
+- A **GitHub account** (free). Your copy of the tool, your digests, and your ratings live in a
+  private repository there, and the digest reaches you as a GitHub email.
+- A **Claude subscription** (Pro or Max). Screening a few hundred abstracts a day uses a modest
+  share of a Pro plan.
+- A computer that is on and logged in at the time of the daily run.
+
+## What gets installed, and why
+
+Four standard, free programs. None of them changes anything else on your computer; each lives
+in its own folder and can be removed again (see "Removing it" below). On Windows, the
+installers may ask for an administrator confirmation once.
+
+| Program | What it is | Why the radar needs it |
+|---|---|---|
+| **Git** | The version-control program behind GitHub. On a Mac it is already there. | Copies your repository to your computer and saves the daily results back to GitHub. |
+| **GitHub CLI** (`gh`) | GitHub's command-line program. | Lets the radar post digests as issues in your repository and read your ratings back. |
+| **uv** | A small program that runs Python projects. | Installs the radar's Python dependencies into a `.venv` folder inside the repository. If your computer has no Python 3.11 or newer, it downloads one into your home folder. |
+| **Claude Code** | Anthropic's command-line program for Claude. On a Mac the Claude desktop app includes it. | The radar calls it to score papers and read PDFs under your subscription. It also does the setup for you. |
+
+Nothing is installed system-wide by the radar itself. Everything it writes is in the
+repository folder, plus three small items in your home folder: the login token (macOS keychain,
+or `~/.config/paper-radar/token` on Windows), a log file, and the scheduled job.
+
+## What the tool does with your data
+
+- **Reads** public paper feeds (NBER, CEPR, IZA, arXiv, RePEc, Crossref, OpenAlex). It sends
+  the contact email from `config/sources.yml` to Crossref and OpenAlex as a courtesy
+  identifier, which their terms ask for. Nothing else is sent to them.
+- **Sends to Claude** (Anthropic, under your subscription): your `profile.md` and the title,
+  authors, and abstract of each new paper, plus the text of open-access PDFs for the top
+  papers. This is the same as pasting them into the Claude app yourself.
+- **Writes to your GitHub repository**: the digests, the database of what it has seen, the
+  BibTeX library. The repository is private; only you see it.
+- **Does not** read your email, your files outside the repository folder, or anything on
+  your computer that it did not create. It does not phone home anywhere else.
+
+## Start your own
+
+1. On this page click **Use this template** and create a **private** repository under your
+   own account.
+2. Install the programs above.
    - **Mac**: the [Claude desktop app](https://claude.ai/download), the
      [GitHub CLI](https://cli.github.com), and [uv](https://docs.astral.sh/uv/).
-   - **Windows**: in PowerShell, `winget install Git.Git GitHub.cli astral-sh.uv`, then
-     `irm https://claude.ai/install.ps1 | iex` for Claude Code. Open a new **Git Bash** window
-     for everything that follows; the scripts are written for it. If you work inside the Claude
-     desktop app's terminal, run `export UV_PYTHON_INSTALL_DIR="$HOME/.local/share/uv/python"`
-     before `uv sync`; the app redirects AppData writes and uv's Python download fails otherwise.
-     uv downloads a Python only if none of version 3.11 or newer is installed already.
+   - **Windows**: open PowerShell and run `winget install Git.Git GitHub.cli astral-sh.uv`, then
+     `irm https://claude.ai/install.ps1 | iex` for Claude Code. Afterwards open **Git Bash**
+     (installed with Git) for everything that follows; the radar's scripts are written for it.
+3. Clone your new repository, open Claude Code in that folder, and say **"set up my radar"**.
+   The file `CLAUDE.md` holds the checklist. Claude Code explains each step before doing it,
+   asks before it installs or logs in to anything, writes `profile.md` from your CV and a
+   couple of your papers, runs the first digest with you, and installs the daily job.
 
-   Clone your new repository.
-3. Open Claude Code in the cloned folder and say **"set up my radar"**. `CLAUDE.md` holds the
-   checklist; it will log you in, write `profile.md` from your CV and papers, run the first
-   digest with you, and install the daily job.
-
-Or do it by hand:
+You can also do every step by hand:
 
 ```bash
-gh auth login && gh auth setup-git
-uv sync
-bin/claude-login.sh                 # headless Claude login, token goes to the keychain
+gh auth login && gh auth setup-git   # GitHub login (opens a browser)
+uv sync                              # Python dependencies into ./.venv
+bin/claude-login.sh                  # Claude login for the daily job (opens a browser)
 # edit profile.md and config/sources.yml
-uv run radar doctor
-uv run radar run                    # first digest
-bin/install-launchd.sh 7 30         # daily at 07:30 on a Mac
+uv run radar doctor                  # checks that everything is found
+uv run radar run                     # first digest
+bin/install-launchd.sh 7 30          # daily at 07:30 on a Mac
 powershell -ExecutionPolicy Bypass -File bin/install-task.ps1 7 30   # same, on Windows
 ```
+
+Windows note: if you run `uv sync` from a terminal inside the Claude desktop app and your
+computer has no Python 3.11 or newer, the download fails because the app redirects where
+programs may write. Run `export UV_PYTHON_INSTALL_DIR="$HOME/.local/share/uv/python"` first,
+or use a normal Git Bash window.
+
+## Removing it
+
+Everything can be undone in a few minutes, in this order:
+
+1. Remove the daily job. Mac: `launchctl bootout gui/$(id -u)/com.paper-radar; launchctl
+   bootout gui/$(id -u)/com.paper-radar.retry` and delete the two `com.paper-radar*.plist` files
+   in `~/Library/LaunchAgents`. Windows, in PowerShell: `Unregister-ScheduledTask paper-radar;
+   Unregister-ScheduledTask 'paper-radar retry'`.
+2. Remove the login token. Mac: `security delete-generic-password -s paper-radar-claude-token`.
+   Windows: delete the folder `~/.config/paper-radar`.
+3. Delete the repository folder on your computer, and the private repository on GitHub
+   (repository Settings, bottom of the page).
+4. If you want the programs gone too: Windows `winget uninstall Git.Git GitHub.cli astral-sh.uv`
+   and delete `~/.local/bin/claude.exe`; Mac delete `~/.local/bin/uv`, `~/.local/bin/claude`,
+   and the GitHub CLI however you installed it. A Python that uv downloaded is under
+   `~/.local/share/uv/python` and can simply be deleted.
 
 ## What the daily run does
 

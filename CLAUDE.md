@@ -1,9 +1,24 @@
 # paper-radar: setup guide for Claude Code
 
 This repository was created from the paper-radar template. If the person has opened you here
-and asks to set up their radar, walk them through the steps below, one at a time, running the
-commands for them where you can and asking only for what you cannot know. Check `README.md`
-for how the radar works.
+and asks to set up their radar, walk them through the steps below, one at a time. Read
+`README.md` first: it explains what the tool does, what it installs, and what it does with data,
+and the person may ask you about any of that.
+
+## How to behave during setup
+
+The person may not be a programmer and may be uneasy about things being installed on their
+computer. So:
+
+- Before each step, say in one or two plain sentences what you are about to do and why.
+- Ask before you install anything, log in anywhere, or change anything outside this folder.
+  Name the program, where it will go, and how to remove it (the README has the list).
+- Check what already exists before installing: a Python 3.11 or newer, Git, `gh`, `uv`,
+  Claude Code. Use what is there.
+- Prefer per-user installs. Say so if a step needs an administrator confirmation.
+- Never ask for, display, or store passwords or tokens yourself. The login scripts open a
+  browser and store what they need; you only run them.
+- At the end, summarise what was installed, where, and what will run every morning.
 
 ## Setup checklist
 
@@ -41,7 +56,8 @@ for how the radar works.
 8. **Schedule.** Mac: `bin/install-launchd.sh 7 30`. Windows:
    `powershell -ExecutionPolicy Bypass -File bin/install-task.ps1 7 30`. Linux:
    `bin/install-cron.sh 7 30`. Each installs a daily job at 07:30 plus a 13:00 retry. The
-   machine has to be awake, with the person logged in, at that time.
+   machine has to be awake, with the person logged in, at that time. Say that a console window
+   will appear briefly on Windows when it runs.
 9. **Explain the daily loop.** Digest arrives by GitHub email. Reply to the email (or comment on
    the issue) with lines like `good: R12 R15`, `bad: R3 too theoretical`,
    `missed: https://...`. Send a paper in by opening an issue with its link. Once in a while
