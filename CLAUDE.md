@@ -22,6 +22,11 @@ for how the radar works.
    test call.
 4. **Dependencies and check.** `uv sync`, then `uv run radar doctor`: it must show the Claude
    binary, `gh`, and the GitHub repo.
+   Windows, inside the Claude desktop app: the app redirects writes to `AppData\Roaming`, which
+   breaks uv's Python download ("Missing expected target directory for Python minor version
+   link"). Run `export UV_PYTHON_INSTALL_DIR="$HOME/.local/share/uv/python"` first, and add the
+   same line to `~/.bashrc` so later runs agree. If `claude` is installed but not on PATH
+   (`~/.local/bin/claude.exe`), the radar finds it there anyway; `radar doctor` confirms.
 5. **Profile.** This is the step that matters. Ask for the person's CV, website, or two or three
    papers (PDFs or links), read them, and write `profile.md` following the headings already in
    it. Show the draft and revise until they are happy. Concrete beats general.

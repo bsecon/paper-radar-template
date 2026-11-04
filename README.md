@@ -13,7 +13,9 @@ under your Claude subscription; no API key and no server.
      [GitHub CLI](https://cli.github.com), and [uv](https://docs.astral.sh/uv/).
    - **Windows**: in PowerShell, `winget install Git.Git GitHub.cli astral-sh.uv`, then
      `irm https://claude.ai/install.ps1 | iex` for Claude Code. Open a new **Git Bash** window
-     for everything that follows; the scripts are written for it.
+     for everything that follows; the scripts are written for it. If you work inside the Claude
+     desktop app's terminal, run `export UV_PYTHON_INSTALL_DIR="$HOME/.local/share/uv/python"`
+     before `uv sync`; the app redirects AppData writes and uv's Python install fails otherwise.
 
    Clone your new repository.
 3. Open Claude Code in the cloned folder and say **"set up my radar"**. `CLAUDE.md` holds the

@@ -49,7 +49,8 @@ def claude_bin(cfg: Config) -> str:
     for cand in [os.environ.get("RADAR_CLAUDE_BIN"), cfg.settings.claude_bin]:
         if cand and Path(os.path.expanduser(cand)).exists():
             return os.path.expanduser(cand)
-    for cand in [shutil.which("claude"), os.path.expanduser("~/.local/bin/claude"), "/opt/homebrew/bin/claude", "/usr/local/bin/claude"]:
+    for cand in [shutil.which("claude"), os.path.expanduser("~/.local/bin/claude"), os.path.expanduser("~/.local/bin/claude.exe"),
+                 "/opt/homebrew/bin/claude", "/usr/local/bin/claude"]:
         if cand and os.access(cand, os.X_OK):
             return cand
     # the desktop app's bundle: layout has changed between versions, so search any depth and take the newest

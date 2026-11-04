@@ -7,12 +7,18 @@ SERVICE="paper-radar-claude-token"
 TOKEN_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/paper-radar/token"
 CL="${RADAR_CLAUDE_BIN:-}"
 if [ -z "$CL" ]; then
-  CL="$(command -v claude || ls -d "$HOME/Library/Application Support/Claude/claude-code/"*/claude.app/Contents/MacOS/claude 2>/dev/null | sort -V | tail -1)"
+  for c in "$(command -v claude 2>/dev/null)" "$HOME/.local/bin/claude" "$HOME/.local/bin/claude.exe"; do
+    [ -n "$c" ] && [ -x "$c" ] && { CL="$c"; break; }
+  done
+fi
+if [ -z "$CL" ]; then  # the macOS desktop app bundle
+  CL="$(ls -d "$HOME/Library/Application Support/Claude/claude-code/"*/claude.app/Contents/MacOS/claude 2>/dev/null | sort -V | tail -1)"
 fi
 [ -x "$CL" ] || { echo "Claude Code binary not found: curl -fsSL https://claude.ai/install.sh | bash"; exit 1; }
 echo "Using $CL"
 echo "A browser window will open; approve the login. The token is captured and stored, not shown."
-OUT="$(env -u CLAUDECODE "$CL" setup-token 2>&1 | tee /dev/stderr)"
+# Show the login progress live, with the token masked; the unmasked copy only goes into $OUT.
+OUT="$(env -u CLAUDECODE "$CL" setup-token 2>&1 | tee >(while IFS= read -r l || [ -n "$l" ]; do printf '%s\n' "${l//sk-ant-oat*/[token hidden]}" >&2; done))"
 TOKEN="$(echo "$OUT" | grep -o 'sk-ant-oat[A-Za-z0-9_-]*' | tail -1)"
 if [ -z "$TOKEN" ]; then
   echo
