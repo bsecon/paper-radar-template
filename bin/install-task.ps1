@@ -5,9 +5,18 @@
 param([int]$Hour = 7, [int]$Minute = 30, [int]$RetryHour = 13)
 $ErrorActionPreference = "Stop"
 $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$bash = "C:\Program Files\Git\bin\bash.exe"
-if (-not (Test-Path $bash)) { $bash = "C:\Program Files (x86)\Git\bin\bash.exe" }
-if (-not (Test-Path $bash)) { throw "Git Bash not found. Install Git for Windows: winget install Git.Git" }
+# Git Bash: next to git.exe on PATH (system or per-user install), then the usual folders.
+# Never C:\Windows\System32\bash.exe, which is WSL.
+$candidates = @()
+$git = Get-Command git.exe -ErrorAction SilentlyContinue
+if ($git) { $candidates += (Join-Path (Split-Path (Split-Path $git.Source)) "bin\bash.exe") }
+$candidates += @(
+    (Join-Path $env:LOCALAPPDATA "Programs\Git\bin\bash.exe"),
+    (Join-Path $env:ProgramFiles "Git\bin\bash.exe"),
+    (Join-Path ${env:ProgramFiles(x86)} "Git\bin\bash.exe")
+)
+$bash = $candidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+if (-not $bash) { throw "Git Bash not found (looked in: $($candidates -join '; ')). Install Git for Windows: winget install Git.Git" }
 $script = ($root -replace '\\', '/') + "/bin/daily.sh"
 $logDir = Join-Path $env:USERPROFILE ".local\state\paper-radar"
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
