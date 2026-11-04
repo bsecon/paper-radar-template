@@ -37,13 +37,44 @@ or `~/.config/paper-radar/token` on Windows), a log file, and the scheduled job.
 - **Reads** public paper feeds (NBER, CEPR, IZA, arXiv, RePEc, Crossref, OpenAlex). It sends
   the contact email from `config/sources.yml` to Crossref and OpenAlex as a courtesy
   identifier, which their terms ask for. Nothing else is sent to them.
-- **Sends to Claude** (Anthropic, under your subscription): your `profile.md` and the title,
-  authors, and abstract of each new paper, plus the text of open-access PDFs for the top
-  papers. This is the same as pasting them into the Claude app yourself.
+- **Sends to Claude** (Anthropic, under your subscription): see the next section for exactly
+  what, step by step.
 - **Writes to your GitHub repository**: the digests, the database of what it has seen, the
   BibTeX library. The repository is private; only you see it.
 - **Does not** read your email, your files outside the repository folder, or anything on
   your computer that it did not create. It does not phone home anywhere else.
+
+### What is sent to Claude, exactly
+
+The radar talks to Claude through Claude Code, the same way a conversation in the Claude app
+does, under your subscription. Three steps send text; nothing else does.
+
+1. **Screening** (every morning, Claude Sonnet). Each request contains the scoring
+   instructions, your whole `profile.md`, up to eight of your most recent ratings of each kind
+   as examples (the rated paper's title, venue, the first 300 characters of its abstract, and
+   the note you wrote with the rating, if any), and a dozen new papers: type, venue, title,
+   authors, JEL codes, and abstract (cut at 2,000 characters). All of this is public bibliographic
+   data except the profile and your rating notes.
+2. **Full reads** (up to five a day, plus papers you sent in; Claude Opus). The instructions,
+   your `profile.md`, the paper's bibliographic data, and the text of its PDF when it is open
+   access (cut at 180,000 characters, roughly 60 pages). Paywalled PDFs are not fetched, so
+   those papers are read from the abstract only.
+3. **Profile review** (only when you run `radar review` yourself; Claude Opus). Your
+   `profile.md` and the full list of your ratings with their notes, so Claude can propose
+   changes to the profile.
+
+What comes back is stored in your repository: a score, a category, and a two-line reason per
+paper, and a structured note per full read. Those are the texts you see in the digest.
+
+Not sent, ever: your emails, your files outside the repository folder, the contents of
+GitHub issues beyond the paper link they contain, your GitHub or Claude credentials, or
+anything about your computer. The prompts are built in `radar/screen.py`,
+`radar/deepread.py`, and `radar/review.py`, in plain text, if you want to read them.
+
+How Anthropic handles the text is governed by the terms of your Claude subscription, the same
+as for conversations in the app. One setting matters: in the Claude app under Privacy, the
+choice whether your conversations may be used to improve Claude applies to Claude Code as well.
+If you would rather your profile and reading never be used that way, turn it off there.
 
 ## Start your own
 
