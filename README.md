@@ -63,6 +63,12 @@ does, under your subscription. Three steps send text; nothing else does.
    `profile.md` and the full list of your ratings with their notes, so Claude can propose
    changes to the profile.
 
+Keep in mind what the profile is: a page about your research interests, written for you by
+Claude Code during setup from your CV and papers. Claude has therefore already seen it, and
+the material it came from, before the first screening run. The daily runs send that same
+page again every morning, because Claude keeps no memory between calls; they do not add
+anything Claude has not seen.
+
 What comes back is stored in your repository: a score, a category, and a two-line reason per
 paper, and a structured note per full read. Those are the texts you see in the digest.
 
