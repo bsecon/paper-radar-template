@@ -64,7 +64,9 @@ does, under your subscription. Three steps send text; nothing else does.
    changes to the profile.
 
 Keep in mind what the profile is: a page about your research interests, written for you by
-Claude Code during setup from your CV and papers. Claude has therefore already seen it, and
+Claude Code during setup from your CV and papers. It is the file `profile.md` in this
+repository folder and exists nowhere else on your computer; the radar reads no profile or
+settings from outside the folder. Claude has therefore already seen it, and
 the material it came from, before the first screening run. The daily runs send that same
 page again every morning, because Claude keeps no memory between calls; they do not add
 anything Claude has not seen.
