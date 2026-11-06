@@ -7,6 +7,17 @@ def test_title_key_ignores_case_punctuation_and_stopwords():
     assert a == b == "marriage market labor supply education choice"
 
 
+def test_title_key_keeps_non_latin_scripts_and_short_keys_never_match():
+    from radar.text import matchable_key
+    ru = title_key("Сочетание традиционных и инновационных технологий")
+    uk = title_key("ПРИНЦИПИ ТА ПІДХОДИ ЩОДО РОЗВИТКУ ЗАКОНОДАВСТВА")
+    assert ru and uk and ru != uk
+    assert title_key("Søgaard and Lüthi on Łódź") == "søgaard luthi łodz"
+    assert matchable_key("Editorial") is None
+    assert matchable_key("Comment on Smith") is None
+    assert matchable_key("Marriage market sorting and inequality")
+
+
 def test_find_identifiers():
     ids = find_identifiers("see https://doi.org/10.1086/722564. and arXiv:2608.17446v2 https://www.nber.org/papers/w35670")
     assert ids["doi"] == "10.1086/722564"

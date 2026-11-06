@@ -22,12 +22,22 @@ def strip_html(s: str) -> str:
 
 def title_key(title: str) -> str:
     """Normalised title used to match the same paper across sources and versions."""
-    t = unicodedata.normalize("NFKD", title or "").encode("ascii", "ignore").decode()
+    t = unicodedata.normalize("NFKD", title or "")
+    t = "".join(c for c in t if not unicodedata.combining(c))  # drop accents, keep every alphabet
     t = t.lower()
-    t = re.sub(r"[^a-z0-9 ]+", " ", t)
+    t = re.sub(r"[^\w ]+", " ", t).replace("_", " ")
     t = re.sub(r"\s+", " ", t).strip()
     words = [w for w in t.split() if w not in {"the", "a", "an", "of", "and", "on", "in", "for", "to"}]
     return " ".join(words)[:200]
+
+
+MIN_KEY_WORDS = 3
+
+
+def matchable_key(title: str) -> str | None:
+    """A title key safe to match papers on, or None when the title is too short to be distinctive."""
+    tk = title_key(title)
+    return tk if len(tk.split()) >= MIN_KEY_WORDS else None
 
 
 def clean_doi(doi: str | None) -> str | None:

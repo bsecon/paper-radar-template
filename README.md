@@ -263,14 +263,13 @@ radar doctor
 Then replace `uv run radar` with `radar` in `bin/daily.sh` and `bin/claude-login.sh`, with the
 virtual environment activated in the scheduled job's shell.
 
-## Updating the code
+## Updates
 
-Improvements land in the template repository. Pull them without touching your state:
-
-```bash
-git remote add template https://github.com/bsecon/paper-radar-template
-git pull template main
-```
+Your copy is yours. Improvements to the template are for people who start fresh; they are not
+rolled out to existing radars, and a repository made from a template cannot simply pull them
+(the histories are unrelated and your profile and sources would conflict). If a later version
+has something you want, the simplest route is to start again from the template and copy your
+`profile.md` and `config/sources.yml` across. Your ratings and library would start over.
 
 ## License
 

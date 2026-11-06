@@ -68,5 +68,6 @@ computer. So:
 - `data/radar.sqlite`, `digests/`, and `library/` are state and are committed by the daily job.
   Don't edit them by hand.
 - `profile.md` and `config/sources.yml` are the only files most people ever need to touch.
-- To pull code improvements from the template: `git remote add template
-  https://github.com/bsecon/paper-radar-template && git pull template main`.
+- Improvements to the template are not rolled out to existing radars, and `git pull` from the
+  template does not work (unrelated histories). If the person wants a newer version, they start
+  again from the template and copy `profile.md` and `config/sources.yml` across.

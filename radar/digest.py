@@ -59,7 +59,12 @@ def render(cfg: Config, db: DB, day: date) -> tuple[str, list[int]]:
     wps = [r for r in rest if r["kind"] == "wp"]
     pubs = [r for r in rest if r["kind"] == "pub"]
     other = [r for r in rest if r["kind"] not in ("wp", "pub")]
-    now_pub = [r for r in auto if r["published_match"]]
+    # only announce a published version when the working paper was itself worth showing
+    now_pub = []
+    for r in auto:
+        wp = db.get(int(r["published_match"])) if r["published_match"] else None
+        if wp and (wp["manual"] or (wp["score"] or 0) >= thr):
+            now_pub.append(r)
 
     out = [f"# Radar digest {day.isoformat()}", ""]
     n_wp = sum(1 for r in auto if r["kind"] == "wp")

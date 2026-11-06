@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Iterator
 
 from radar.models import Paper
-from radar.text import title_key
+from radar.text import matchable_key, title_key
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS papers (
@@ -117,7 +117,7 @@ class DB:
 
     # ---- papers ----------------------------------------------------------
     def find_by_title(self, title: str, kind: str | None = None) -> sqlite3.Row | None:
-        tk = title_key(title)
+        tk = matchable_key(title)
         if not tk:
             return None
         if kind:
@@ -230,8 +230,18 @@ class DB:
             c.executemany("UPDATE papers SET digested_on=? WHERE seq=?", [(day.isoformat(), s) for s in seqs])
 
     def working_papers_matching(self, title: str) -> list[sqlite3.Row]:
-        tk = title_key(title)
+        tk = matchable_key(title)
+        if not tk:
+            return []
         return self.conn.execute("SELECT * FROM papers WHERE title_key=? AND kind='wp'", (tk,)).fetchall()
+
+    def rekey_titles(self) -> int:
+        """Recompute title_key for every paper after a change to the key function."""
+        rows = self.conn.execute("SELECT seq, title, title_key FROM papers").fetchall()
+        changed = [(title_key(r["title"]), r["seq"]) for r in rows if title_key(r["title"]) != r["title_key"]]
+        with self.tx() as c:
+            c.executemany("UPDATE papers SET title_key=? WHERE seq=?", changed)
+        return len(changed)
 
     # ---- feedback --------------------------------------------------------
     def add_feedback(self, seq: int, label: str, note: str = "", origin: str = "cli") -> None:
